@@ -1,0 +1,19 @@
+# data never enters git
+data/*
+!data/.gitkeep
+data_synth/
+results/
+results_synth/
+xai_results/*.png
+xai_results_synth/
+*.pt
+*.pth
+*.npz
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/
+.env
+wandb/
+.DS_Store
+.pytest_cache/

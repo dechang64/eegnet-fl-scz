@@ -1,0 +1,8 @@
+data_dir: data
+out_dir: results
+n_splits: 5
+seed: 42
+epochs: 100
+bs: 64
+lr: 0.001
+class_weight: null

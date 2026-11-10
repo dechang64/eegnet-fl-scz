@@ -1,0 +1,29 @@
+name: tests
+on: [push, pull_request]
+
+jobs:
+  # Fast guards: protocol, metrics and loader (no torch needed).
+  guards:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      # AUDIT B9: the old workflow installed only numpy/scikit-learn/pytest while
+      # tests import src.data -> pandas, so CI failed before running a single
+      # assertion. pyarrow is needed by pandas.read_parquet.
+      - run: pip install numpy pandas pyarrow scikit-learn pytest
+      - run: pytest tests/ -v
+
+  # Model guards: EEGNet / losses. torch is the slow part, kept separate.
+  models:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install numpy pandas pyarrow scikit-learn pytest
+      - run: pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - run: pytest tests/ -v -k "eegnet or mechanism"

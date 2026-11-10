@@ -1,0 +1,98 @@
+# eegnet-fl-scz
+
+Research scaffold for one question:
+
+> Does an EEGNet trained **only** to classify schizophrenia from the
+> button-tone paradigm independently rediscover the N100 corollary-discharge
+> signature (attenuated self-generated-tone suppression in SCZ), without ever
+> being told what N100 is?
+
+If it does, the model doubles as a mechanism probe, which is a stronger claim
+than another point of accuracy. If it does not, that is also a result.
+
+**Status: scaffold only. No real data has been run. There are no accuracy or AUC
+numbers yet, and nothing in this repository should be cited as evidence of one.**
+See [`AUDIT.md`](AUDIT.md) for what was found wrong with the initial scaffold and
+what was fixed before the first push.
+
+## Layout
+
+```
+configs/default.yaml       hyper-parameters
+src/data.py                button-tone-sz loader (labels from CSV, fails loudly)
+src/protocol.py            subject-grouped CV + cluster-bootstrap metrics
+src/eegnet.py              EEGNet (Lawhern 2018) with measured feature length
+src/barros_cnn.py          1D-CNN baseline, approximation of Barros 2022
+src/mechanism_loss.py      condition-difference regularizer (W2, not yet valid)
+src/train.py               training entrypoint, writes a run manifest
+xai_dissect.py             kernel FFT / spatial weights / virtual ERP
+tests/                     guards that encode the audit findings
+```
+
+## Install
+
+```bash
+python -m venv .venv && . .venv/bin/activate      # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+# CPU-only torch (much smaller than the default wheel):
+pip install torch --index-url https://download.pytorch.org/whl/cpu
+pytest tests/ -v
+```
+
+## Data
+
+`button-tone-sz` (Kaggle, `byronadams/button-tone-sz`) is **not** in the repo.
+Expected layout:
+
+```
+data/
+  selfsz/       selfsz_<subject>.parquet   # or .npy, (channels, time)
+  passivesz/    passivesz_<subject>.parquet
+  buttonsz/     buttonsz_<subject>.parquet
+labels.csv                                   # subject_id,label  (1=SCZ, 0=control)
+```
+
+Labels are **never** inferred from filenames: every condition name in this
+dataset contains `sz`, so any filename heuristic labels the whole cohort SCZ.
+Without `labels.csv` the loader raises.
+
+## Run
+
+```bash
+python -m src.train --condition selfsz --model eegnet --labels labels.csv
+python -m src.train --condition selfsz --model barros_cnn --labels labels.csv
+
+python xai_dissect.py --condition selfsz --labels labels.csv \
+    --checkpoint results/selfsz_eegnet_fold4.pt \
+    --scaler results/selfsz_eegnet_scaler_fold4.npz \
+    --holdout-subjects s12,s19,s31        # a fold's held-out subjects
+```
+
+Outputs land in `results/` (per-fold metrics, scaler, weights, a JSON manifest
+with git sha / config / versions) and `xai_results/` (three figures).
+
+## Design commitments
+
+1. **No subject appears in both train and test.** Enforced by construction and by
+   an explicit overlap check that raises; a subject carrying two different
+   labels is treated as a data fault.
+2. **Confidence intervals resample subjects, not epochs.** Ten epochs from one
+   subject are not ten independent observations.
+3. **Standardisation is fitted on the training fold only** and persisted so XAI
+   sees exactly the same transform.
+4. **Fail loudly.** Every unresolved constant (`CHANNELS`, `FS`, subject-id
+   grammar) raises instead of defaulting to something plausible.
+
+## Not done (D1 checklist)
+
+- [ ] confirm file format, channel names/order, sampling rate (current: 5 midline
+      channels @ 500 Hz - unverified guesses)
+- [ ] confirm the subject-id grammar of the real filenames
+- [ ] build `labels.csv` from ground-truth metadata
+- [ ] transcribe Barros 2022's exact architecture into `barros_cnn.py`
+- [ ] first real 5-fold run -> first honest AUC
+- [ ] two-site federated extension (FedAvg + DP), week 4
+
+## License
+
+MIT (see `LICENSE`).
