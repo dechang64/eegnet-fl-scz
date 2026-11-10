@@ -27,12 +27,74 @@ import numpy as np
 import pandas as pd
 
 CONDITIONS = ("selfsz", "passivesz", "buttonsz")
-CHANNELS = ["Fz", "FCz", "Cz", "CPz", "Pz"]        # TODO(D1): verify
-FS = 500.0                                          # TODO(D1): verify
-MIDLINE_POS = {"Fz": (0.0, 0.62), "FCz": (0.0, 0.38), "Cz": (0.0, 0.0),
-               "CPz": (0.0, -0.38), "Pz": (0.0, -0.62)}
+
+# The nine sites the dataset's own description and the replications analyse
+# (Fz FCz Cz FC3 FC4 C3 C4 CP3 CP4). Order is the one the dataset text lists;
+# it is NOT guaranteed to be the column order of any given export, which is why
+# build_dataset.py selects columns by name and refuses on a missing site.
+CHANNELS = ["Fz", "FCz", "Cz", "FC3", "C3", "CP3", "FC4", "C4", "CP4"]
+
+# Approximate 10-20 positions on a unit scalp disc: x lateral (- = left/odd),
+# y anterior. Approximate is fine for a weight map; it is not a projection and
+# must not be used to claim anatomical localisation.
+CHANNEL_POS = {
+    "Fz": (0.00, 0.62), "FCz": (0.00, 0.38), "Cz": (0.00, 0.00),
+    "FC3": (-0.42, 0.38), "C3": (-0.62, 0.00), "CP3": (-0.42, -0.38),
+    "FC4": (0.42, 0.38), "C4": (0.62, 0.00), "CP4": (0.42, -0.38),
+}
+# Kept for callers written against the old (wrong: 5 midline channels) name.
+MIDLINE_POS = CHANNEL_POS
+
 SUPPORTED_SUFFIXES = (".parquet", ".npy")
 MIN_TIMESTEPS = 32
+META_NAME = "dataset_meta.json"
+
+
+def resolve_event_onset(data_dir) -> float:
+    """Seconds from the start of the epoch to the event (stimulus / button).
+
+    button-tone-sz epochs are centred on the event (-1.5 s .. +1.5 s), so the
+    event sits at t=1.5 s, not t=0. The loader keeps only the samples and drops
+    the time column, so without this the N100 window (80-150 ms) would be
+    shaded near the start of a centred epoch: correct-looking, wrong by 1.5 s.
+    The ingester derives it from the real time column.
+    """
+    import json
+    meta_path = Path(data_dir) / META_NAME
+    if not meta_path.exists():
+        raise FileNotFoundError(
+            f"{meta_path} missing: event onset is unknown, so no latency may "
+            "be read off a time axis. Build the dataset with "
+            "scripts/build_dataset.py first.")
+    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    if "event_onset_s" not in meta:
+        raise KeyError(
+            f"{meta_path}: 'event_onset_s' absent (built by an older "
+            "ingester). Rebuild it - do not assume 0.")
+    return float(meta["event_onset_s"])
+
+
+def resolve_fs(data_dir) -> float:
+    """Sampling rate, read from `dataset_meta.json` written by the ingester.
+
+    Deliberately not a constant. Every time axis in xai_dissect.py is
+    `np.arange(T) / FS`; a wrong constant (the old guess was 500 Hz) would put
+    the N100 band at the wrong place on every figure while still plotting
+    cleanly - the quietest possible corruption. The ingester derives it from
+    the real time column, so the only honest source is that file.
+    """
+    import json
+    meta_path = Path(data_dir) / META_NAME
+    if not meta_path.exists():
+        raise FileNotFoundError(
+            f"{meta_path} missing: sampling rate is unknown, so no time axis "
+            "may be drawn. Build the dataset with scripts/build_dataset.py "
+            "(which derives fs from the real time column) first.")
+    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    fs = float(meta["fs"])
+    if not (0.0 < fs < 100000.0):
+        raise ValueError(f"{meta_path}: implausible fs={fs}")
+    return fs
 
 
 def _load_array(fp: Path) -> np.ndarray:

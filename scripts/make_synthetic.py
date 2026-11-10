@@ -19,13 +19,23 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import json
+import sys
 from pathlib import Path
 
 import numpy as np
 
-CHANNELS = 5          # midline subset used by src/data.py
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from src.data import CHANNELS, META_NAME       # noqa: E402
+
+N_CH = len(CHANNELS)  # 9 documented sites - must match src/data.py exactly
 FS = 500.0
 T = 320               # 640 ms epochs, as in the button-tone design
+
+# Relative N100 amplitude per site, in CHANNELS order
+# (Fz FCz Cz FC3 C3 CP3 FC4 C4 CP4): fronto-central maximum, decaying
+# laterally and posteriorly. Shape only - it is not a fitted topography.
+TOPO = np.array([1.0, 0.90, 0.60, 0.70, 0.45, 0.30, 0.70, 0.45, 0.30])
 
 
 def n100_epoch(rng, suppressed: float, base_amp: float = 6.0):
@@ -33,16 +43,14 @@ def n100_epoch(rng, suppressed: float, base_amp: float = 6.0):
     whose amplitude is multiplied by `suppressed` (1.0 = full N100, small =
     suppressed)."""
     t = np.arange(T) / FS
-    noise = rng.normal(0, 0.6, size=(CHANNELS, T))
+    noise = rng.normal(0, 0.6, size=(N_CH, T))
     # 1/f shaping via cumulative sum, then re-standardise
     noise = np.cumsum(noise, axis=1)
     noise -= noise.mean(axis=1, keepdims=True)
     noise /= noise.std(axis=1, keepdims=True) + 1e-9
     latency, width = 0.100, 0.025
     n100 = -base_amp * np.exp(-0.5 * ((t - latency) / width) ** 2)
-    # frontal-central topography: Fz/FCz strongest
-    topo = np.array([1.0, 0.85, 0.55, 0.35, 0.25])
-    return (noise * 1.0 + suppressed * np.outer(topo, n100)).astype(np.float32)
+    return (noise * 1.0 + suppressed * np.outer(TOPO, n100)).astype(np.float32)
 
 
 def main(argv=None):

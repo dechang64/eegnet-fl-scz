@@ -41,8 +41,12 @@ pytest tests/ -v
 
 ## Data
 
-`button-tone-sz` (Kaggle, `byronadams/button-tone-sz`) is **not** in the repo.
-Expected layout:
+`button-tone-sz` (Kaggle, **`broach/button-tone-sz`**, 81 subjects: 49 SCZ +
+32 controls, CC BY-NC-SA 4.0) is **not** in the repo. `ERPdata.csv` provides
+trial-averaged ERPs at nine sites (Fz FCz Cz FC3 C3 CP3 FC4 C4 CP4) for all
+subjects; single-trial 64-channel data is public for ~24 subjects only.
+Build the dataset with `scripts/build_dataset.py` - see
+[`D1_PLAYBOOK.md`](D1_PLAYBOOK.md). Expected layout:
 
 ```
 data/
@@ -85,12 +89,15 @@ with git sha / config / versions) and `xai_results/` (three figures).
 
 ## Not done (D1 checklist)
 
-- [ ] confirm file format, channel names/order, sampling rate (current: 5 midline
-      channels @ 500 Hz - unverified guesses)
-- [ ] confirm the subject-id grammar of the real filenames
-- [ ] build `labels.csv` from ground-truth metadata
+- [x] confirm file format, channel names/order, sampling rate - resolved
+      2026-11-10: 9 sites, fs derived from the real time column into
+      `dataset_meta.json`, no more constants
+- [x] confirm the subject-id grammar - `<cond>_<subject>` enforced by
+      `parse_stem`; the Kaggle subject ids plug in via `build_dataset.py`
+- [x] build `labels.csv` from ground-truth metadata - automated from
+      `demographic.csv`
 - [ ] transcribe Barros 2022's exact architecture into `barros_cnn.py`
-- [ ] first real 5-fold run -> first honest AUC
+- [ ] first real 5-fold run -> first honest AUC  (commands: D1_PLAYBOOK.md)
 - [ ] two-site federated extension (FedAvg + DP), week 4
 
 ## License

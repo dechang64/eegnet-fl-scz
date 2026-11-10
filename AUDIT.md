@@ -29,6 +29,27 @@ regression test guards it; DOCUMENTED = deliberately left as-is with a warning.
 - `python -m py_compile` over every module: clean.
 - No credentials, tokens, or data files in the tree (`git ls-files` checked).
 
+## Addendum (2026-11-10, D1 preparation)
+
+- **B14**: `FS` was a hardcoded 500 Hz guess feeding every time axis. Now
+  derived from the real time column by the ingester and read from
+  `dataset_meta.json` (`resolve_fs`); missing meta raises.
+- **B15**: virtual-ERP latency was measured from sample 0 while the dataset's
+  epochs are centred on the stimulus; the N100 window would have been shaded
+  ~1.5 s off. Onset is now derived from the time column and latency is
+  measured from the event.
+- **B16**: the documented dataset ref `byronadams/button-tone-sz` does not
+  exist; the real one is `broach/button-tone-sz`. The channel montage was also
+  wrong (5 midline); the dataset provides nine analysis sites, now in
+  `CHANNELS` with an explicit position map.
+- Ingest toolchain added (`src/ingest.py`, `scripts/probe_dataset.py`,
+  `scripts/build_dataset.py`, `tests/test_ingest.py`): column roles detected
+  from aliases, duplicates/missing electrodes/unknown diagnosis values raise,
+  fs and event onset derived from data. Exercised end-to-end on a
+  shape-faithful fixture (24 subjects, 250 Hz, centred epochs): probe, build,
+  5-fold training and XAI all ran; onset derived as 1.5 s. `pytest` -> 46
+  passed.
+
 ## What this audit does NOT claim
 
 - No real data has been run. `button-tone-sz` has never been loaded here, so

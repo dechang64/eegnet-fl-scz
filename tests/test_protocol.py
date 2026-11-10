@@ -8,6 +8,7 @@ import warnings
 import numpy as np
 import pytest
 
+from src.data import CHANNELS
 from src.protocol import SubjectBasedCV, aggregate_folds, report_metrics
 
 
@@ -141,8 +142,13 @@ def test_mechanism_loss_shape_guard():
 
 
 # ---------------------------------------------------------------------- loader
-def _write_condition(root, subjects, channels=5, T=64, labels=True,
+# The channel count is no longer a magic 5: the dataset provides nine sites
+# (see CHANNELS). Hard-coding 5 here is what let the old montage assumption
+# survive, so the tests now derive it.
+def _write_condition(root, subjects, channels=None, T=64, labels=True,
                      cond="selfsz"):
+    from src.data import CHANNELS as _CH
+    channels = len(_CH) if channels is None else channels
     d = root / cond
     d.mkdir(parents=True, exist_ok=True)
     for i, s in enumerate(subjects):
@@ -168,7 +174,7 @@ def test_loader_positive_path(tmp_path):
     _write_condition(tmp_path, ["s01", "s02", "s03", "s04"])
     X, subj, y = load_condition(tmp_path, "selfsz",
                                labels_csv=tmp_path / "labels.csv")
-    assert X.shape == (4, 5, 64)
+    assert X.shape == (4, len(CHANNELS), 64)
     assert subj.tolist() == ["s01", "s02", "s03", "s04"]
     assert sorted(y.tolist()) == [0, 0, 1, 1]
 
@@ -195,7 +201,7 @@ def test_loader_requires_labels_for_every_subject(tmp_path):
 def test_loader_channel_mismatch_raises(tmp_path):
     from src.data import load_condition
     _write_condition(tmp_path, ["s01", "s02"], channels=14)
-    with pytest.raises(ValueError, match="expected 5 channels"):
+    with pytest.raises(ValueError, match=f"expected {len(CHANNELS)} channels"):
         load_condition(tmp_path, "selfsz", labels_csv=tmp_path / "labels.csv")
 
 
@@ -204,7 +210,8 @@ def test_loader_rejects_single_class(tmp_path):
     d = tmp_path / "selfsz"
     d.mkdir()
     for s in ("s01", "s02"):
-        np.save(d / f"selfsz_{s}.npy", np.zeros((5, 64), dtype=np.float32))
+        np.save(d / f"selfsz_{s}.npy",
+                np.zeros((len(CHANNELS), 64), dtype=np.float32))
     (tmp_path / "labels.csv").write_text("subject_id,label\ns01,1\ns02,1\n",
                                          encoding="utf-8")
     with pytest.raises(RuntimeError, match="degenerate labels"):
@@ -215,10 +222,11 @@ def test_loader_rejects_nan(tmp_path):
     from src.data import load_condition
     d = tmp_path / "selfsz"
     d.mkdir()
-    bad = np.zeros((5, 64), dtype=np.float32)
+    bad = np.zeros((len(CHANNELS), 64), dtype=np.float32)
     bad[0, 0] = np.nan
     np.save(d / "selfsz_s01.npy", bad)
-    np.save(d / "selfsz_s02.npy", np.zeros((5, 64), dtype=np.float32))
+    np.save(d / "selfsz_s02.npy",
+            np.zeros((len(CHANNELS), 64), dtype=np.float32))
     (tmp_path / "labels.csv").write_text("subject_id,label\ns01,1\ns02,0\n",
                                          encoding="utf-8")
     with pytest.raises(ValueError, match="NaN"):
