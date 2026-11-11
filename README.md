@@ -22,9 +22,12 @@ the diagnostic claim: with 7836 single trials and subject-grouped CV the
 subject-level AUC is 0.595, 95% CI [0.470, 0.720], because ICC(1)=0.04 makes
 the effective sample size ~1622 but leaves the number of independent people at
 81 (`scripts/single_trial_check.py`). See also [`AUDIT.md`](AUDIT.md) and
-[`D1_PLAYBOOK.md`](D1_PLAYBOOK.md). These numbers come from a third-party
-Zenodo copy of the data; re-verify against the official Kaggle download
-before citing.
+[`D1_PLAYBOOK.md`](D1_PLAYBOOK.md).
+
+**Provenance.** Every number above was first computed on a third-party Zenodo
+copy and afterwards re-checked against the official Kaggle release. All three
+input files are byte-identical (`scripts/check_hashes.py`; digests in
+D1_PLAYBOOK section 1a), so these results describe the official data.
 
 ## Layout
 

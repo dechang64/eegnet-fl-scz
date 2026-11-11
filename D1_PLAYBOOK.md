@@ -18,18 +18,6 @@ one that was actually exercised. The fixture lives in `_fake_kaggle/`
 | event latency | assumed t=0 | derived (epochs are centred → onset ≈ 1.5 s) |
 | labels | CSV by hand | auto-built from `demographic.csv` |
 
-## 1b. No-token route (used 2026-11-10)
-
-A third-party Zenodo record bundles the raw CSVs:
-`zenodo.org/api/records/19104585` redirects to record 24082010, whose
-`Schizophrenia Project copy.zip` (157 MB) contains
-`dataset_raw_zip_csv/ERPdata.csv` + `demographic.csv`. No Kaggle credentials
-needed. Provenance is weaker than the official upload - fine for pipeline
-verification, but cross-check against Kaggle before citing numbers. The
-verified facts so far: fs derived as 1023.96 Hz (= the documented 1024 Hz),
-3072 samples = 3.0 s centred epochs, event onset 1.5 s, 81 subjects x 3
-conditions complete, labels 49 SCZ / 32 controls.
-
 ## 1. Download (only the small files first)
 
 ```bash
@@ -42,6 +30,30 @@ unzip "*.zip" -d kaggle_raw/
 
 ERPdata.csv + demographic.csv are a few MB. Do **not** download the 8.6 GB
 single-trial archive until the ERP-averaged pass has justified it.
+
+### 1a. Provenance - verify, do not assume
+
+Two routes were used and produce **byte-identical** files (checked 2026-11-10):
+
+| file | sha256 (first 16) | bytes |
+|---|---|---|
+| `ERPdata.csv` | `16c34c14cfe5dccc` | 120,228,250 |
+| `mergedTrialData.csv` | `3da285b58bcdb855` | 15,361,541 |
+| `demographic.csv` | `417d655ab85343b8` | 1,566 |
+
+```bash
+python scripts/check_hashes.py --dir kaggle_raw
+```
+
+Exits non-zero on any mismatch, and accepts both layouts Kaggle serves
+(`ERPdata.csv` arrives inside a zip, `demographic.csv` bare). The alternative
+no-token route - `zenodo.org/api/records/19104585`, a 157 MB zip whose
+`dataset_raw_zip_csv/` holds the same CSVs - passes the same check, so the
+digests settle that copy too.
+
+Facts confirmed against both copies: fs derived as 1023.96 Hz (the documented
+1024 Hz), 3072 samples = 3.0 s centred epochs, event onset 1.5 s, 81 subjects
+x 3 conditions complete, labels 49 SCZ / 32 controls.
 
 ## 2. Probe — look before building
 

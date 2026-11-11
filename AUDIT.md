@@ -53,7 +53,8 @@ regression test guards it; DOCUMENTED = deliberately left as-is with a warning.
 ## Addendum 2 (2026-11-10, single-trial analysis)
 
 Question raised: if averaging leaves one sample per subject, what happens
-without averaging? `mergedTrialData.csv` (third-party Zenodo copy) carries
+without averaging? `mergedTrialData.csv` (byte-identical to the official
+Kaggle release, see D1_PLAYBOOK 1a) carries
 23201 usable trials. `scripts/single_trial_check.py` measures what that buys.
 
   A  single trial, random 5-fold           AUC 0.564   WRONG - leaked
