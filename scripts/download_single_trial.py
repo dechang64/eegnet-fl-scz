@@ -59,7 +59,10 @@ def archive_ok(path: Path) -> bool:
 
 
 def download(url: str, dest: Path, key: str, chunk: int = 1 << 20) -> None:
-    tmp = dest.with_suffix(dest.suffix + ".part")
+    # When a (broken) archive already sits at `dest`, overwrite it in place:
+    # the file sandbox on this machine refuses to rename a .part over an
+    # existing path (WinError 5), and refuses to unlink either.
+    tmp = dest if dest.exists() else dest.with_suffix(dest.suffix + ".part")
     headers = {"Authorization": f"Bearer {key}"}
     with requests.get(url, headers=headers, stream=True, timeout=(30, 300)) as r:
         if r.status_code != 200:
@@ -78,7 +81,8 @@ def download(url: str, dest: Path, key: str, chunk: int = 1 << 20) -> None:
                     last = now
                     pct = f"{100 * done / total:5.1f}%" if total else "  ?  "
                     print(f"    {pct} {done / 1e6:7.1f} MB", flush=True)
-    tmp.replace(dest)
+    if tmp != dest:
+        tmp.replace(dest)
 
 
 def main() -> int:

@@ -38,6 +38,7 @@ from sklearn.model_selection import StratifiedKFold  # noqa: E402
 MIDLINE = ["Fz", "FCz", "Cz", "CPz", "Pz"]
 WINDOW_MS = (-100.0, 400.0)
 N_SAMPLES = 3072
+T0 = time.time()
 
 
 def load_time_grid() -> np.ndarray:
@@ -53,12 +54,14 @@ def find_zip(raw_dirs, sid):
     return None
 
 
-def load_subject(zip_path: Path, cols_hdr: list, w_idx: np.ndarray):
+def load_subject(zip_path: Path, cols_hdr: list, w_idx: np.ndarray,
+                 check_crc: bool = True):
     sid = int(zip_path.name.split(".")[0])
     with zipfile.ZipFile(zip_path) as zf:
-        bad = zf.testzip()
-        if bad:
-            raise ValueError(f"corrupt zip {zip_path}: {bad}")
+        if check_crc:
+            bad = zf.testzip()
+            if bad:
+                raise ValueError(f"corrupt zip {zip_path}: {bad}")
         name = [n for n in zf.namelist() if n.lower().endswith(".csv")][0]
         with zf.open(name) as fh:
             df = pd.read_csv(fh, header=None, names=cols_hdr, low_memory=False)
@@ -105,6 +108,8 @@ def main() -> int:
     ap.add_argument("--epochs", type=int, default=25)
     ap.add_argument("--batch", type=int, default=64)
     ap.add_argument("--seeds", type=int, default=3)
+    ap.add_argument("--skip-crc", action="store_true",
+                    help="skip zip CRC validation (archives were checked on download)")
     args = ap.parse_args()
 
     torch.set_num_threads(max(1, torch.get_num_threads() // 2))
@@ -125,11 +130,13 @@ def main() -> int:
 
     Xs, ys, meta = {}, {}, {}
     for sid in all_sids:
-        sid, X, heads = load_subject(find_zip(raw_dirs, sid), cols_hdr, w_idx)
+        sid, X, heads = load_subject(find_zip(raw_dirs, sid), cols_hdr, w_idx,
+                                     check_crc=not args.skip_crc)
         Xs[sid], ys[sid] = X, np.full(len(X), diag[sid], dtype=np.int64)
         meta[sid] = heads
         if sid % 10 == 1:
-            print(f"  loaded {sid} ({X.shape[0]} trials)", flush=True)
+            print(f"  loaded {sid} ({X.shape[0]} trials) {time.time()-T0:.0f}s",
+                  flush=True)
     total = sum(len(v) for v in Xs.values())
     print(f"all loaded: 81 subjects, {total} trials, window {n_t} steps")
 
