@@ -140,16 +140,30 @@ section 1.
    (203 MiB compressed each) and build the loader against 4-6 subjects first.
    Disk on this machine: 44 GiB free on C:, 32 GiB on D:.
 
-## 6. Still unverified - check when the first 64-channel file lands
+## 6. Verified against real 64-channel files (2026-11-11, subjects 1 2 3 67 68 69)
 
-- Whether the 64-channel files' trial ids and ITI match `mergedTrialData.csv`
-  row for row (join on `subject`, `trial`, `condition`).
-- Whether `TP10` is a usable mastoid reference or already re-referenced away.
-- Whether trial counts per subject in the single-trial files equal
-  `100 - rejected` from `mergedTrialData.csv`. If they do not, one of the two
-  files went through a different rejection pass.
-- Whether the documented 1024 Hz is exact (our ERP grid resolves to 1023.96 Hz,
-  which is 1024 Hz with a 1024/1023.96 rounding on the time axis).
+Downloaded 6 subjects (HC 1/2/3, SCZ 67/68/69, ~205 MiB zip each) to
+`D:/eegnet-data/single_trial` and ran `scripts/verify_single_trial.py`.
+Every check passed for all six subjects (`verify_single_trial.json`):
+
+- Files are **headerless**: 74 numeric columns exactly as `columnLabels.csv`
+  (4 index + 64 scalp + VEOa/VEOb/HEOL/HEOR/Nose/TP10). The earlier MNE
+  notebook's `pd.read_csv(..., header=None)` on a file with a header does not
+  apply to the shipped files.
+- Trial blocks: each trial is a contiguous 3072-row block, ~289 trials per
+  subject, in **presentation order, not sorted by trial id** (subject 1
+  starts with trial 100). Join by `(trial, condition)`, never by position.
+- Trial sets match `mergedTrialData.csv` `rejected == 0` rows exactly
+  (subject 1: 289 = 289; condition split 100/94/95 identical). So the raw
+  files contain only accepted trials — `100 - rejected` confirmed.
+- fs is exactly **1024 Hz** (`time.csv`: 0.9766 ms spacing, event at sample
+  1537 = -1500 ms relative to file start; 3072 samples span 3.0 s).
+- Per-trial N100 recomputed from raw waveforms (mean 80-100 ms at Fz/FCz/Cz)
+  matches `mergedTrialData.csv`'s `*_N100` columns to **0.0000 uV** for all
+  trials of all six subjects — the feature table is derived from these very
+  waveforms with the same convention.
+- Still open: whether `TP10` is a usable mastoid reference (column exists;
+  re-referencing state not yet checked) — matters only if we montage-plot.
 
 ## 7. How to re-check any of this
 
