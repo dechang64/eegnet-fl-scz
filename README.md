@@ -10,10 +10,17 @@ Research scaffold for one question:
 If it does, the model doubles as a mechanism probe, which is a stronger claim
 than another point of accuracy. If it does not, that is also a result.
 
-**Status: scaffold only. No real data has been run. There are no accuracy or AUC
-numbers yet, and nothing in this repository should be cited as evidence of one.**
-See [`AUDIT.md`](AUDIT.md) for what was found wrong with the initial scaffold and
-what was fixed before the first push.
+**Status: pipeline verified end-to-end on the real data (81 subjects). First
+honest numbers (2026-11-10, trial-averaged ERPs, subject-grouped 5-fold CV):
+EEGNet AUC 0.447 +/- 0.074, BarrosCNN 0.516 +/- 0.081 - chance level, as the
+dataset author himself predicted for averaged-waveform diagnosis. The
+classical N100 suppression contrast (no ML) replicates the phenomenon's
+direction in both groups (+1.80 / +1.63 uV) but the group contrast is not
+significant with a crude peak metric (p=0.61). Details: `d1_probe.json`,
+`scripts/n100_classic_check.py`. See also [`AUDIT.md`](AUDIT.md) and
+[`D1_PLAYBOOK.md`](D1_PLAYBOOK.md). These numbers come from a third-party
+Zenodo copy of the data; re-verify against the official Kaggle download
+before citing.
 
 ## Layout
 

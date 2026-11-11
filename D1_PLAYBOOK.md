@@ -18,6 +18,18 @@ one that was actually exercised. The fixture lives in `_fake_kaggle/`
 | event latency | assumed t=0 | derived (epochs are centred → onset ≈ 1.5 s) |
 | labels | CSV by hand | auto-built from `demographic.csv` |
 
+## 1b. No-token route (used 2026-11-10)
+
+A third-party Zenodo record bundles the raw CSVs:
+`zenodo.org/api/records/19104585` redirects to record 24082010, whose
+`Schizophrenia Project copy.zip` (157 MB) contains
+`dataset_raw_zip_csv/ERPdata.csv` + `demographic.csv`. No Kaggle credentials
+needed. Provenance is weaker than the official upload - fine for pipeline
+verification, but cross-check against Kaggle before citing numbers. The
+verified facts so far: fs derived as 1023.96 Hz (= the documented 1024 Hz),
+3072 samples = 3.0 s centred epochs, event onset 1.5 s, 81 subjects x 3
+conditions complete, labels 49 SCZ / 32 controls.
+
 ## 1. Download (only the small files first)
 
 ```bash

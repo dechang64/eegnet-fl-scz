@@ -3,6 +3,9 @@ data/*
 !data/.gitkeep
 data_synth/
 _fake_kaggle/
+_zenodo/
+n100_suppression_check.csv
+zen_meta.json
 _fake_data/
 _fake_results/
 _fake_xai/
