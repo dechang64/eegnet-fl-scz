@@ -4,9 +4,14 @@ The two Kaggle mirrors partition the 81 subjects:
   * broach/button-tone-sz   -> subjects 1-24 and 66-81 (40 subjects)
   * broach/buttontonesz2    -> subjects 25-65        (41 subjects)
 
-Each subject is a single ~200 MB zipped CSV. Downloads are done with plain
+Each subject is a single ~220 MB zipped CSV. Downloads are done with plain
 HTTPS against the Kaggle API so that a single file can be fetched without
-pulling the whole mirror (the full dataset is ~9 GB).
+pulling the whole mirror (~21 GB per dataset).
+
+Note on the URL shape: on Kaggle every subject is stored as a *directory*
+`<sid>.csv/` holding one file `<sid>.csv`, so the per-file endpoint has to be
+called as `.../{sid}.csv%2F{sid}.csv`. The plain `.../{sid}.csv` form answers
+404 even for subjects that are present in the mirror.
 
 Usage:
     KAGGLE_KEY=... python scripts/download_single_trial.py --dest-root D:/eegnet-data
@@ -37,7 +42,7 @@ SUBDIR_OF = {
     "broach/buttontonesz2": "single_trial_ds2",
 }
 
-API = "https://www.kaggle.com/api/v1/datasets/download/{dataset}/{filename}"
+API = "https://www.kaggle.com/api/v1/datasets/download/{dataset}/{subj}.csv%2F{subj}.csv"
 USER = "dechang64"
 
 
@@ -107,14 +112,16 @@ def main() -> int:
             continue
 
         if dest.exists():
+            # Do not unlink: the caller's file sandbox may route deletion to a
+            # trash implementation that aborts. The fresh copy is streamed to a
+            # .part file and os.replace()d over the stale archive at the end.
             print(f"[{i:2d}/{len(subjects)}] {subj:3d} cached archive invalid, "
                   f"re-downloading", flush=True)
-            dest.unlink()
 
         for attempt in range(1, args.max_tries + 1):
             try:
                 print(f"[{i:2d}/{len(subjects)}] {subj:3d} <- {dataset}", flush=True)
-                download(API.format(dataset=dataset, filename=f"{subj}.csv"), dest, key)
+                download(API.format(dataset=dataset, subj=subj), dest, key)
                 if not archive_ok(dest):
                     raise RuntimeError("downloaded archive failed CRC check")
                 print(f"[{i:2d}/{len(subjects)}] {subj:3d} done "

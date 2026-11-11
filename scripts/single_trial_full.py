@@ -187,10 +187,11 @@ def main() -> int:
     neg = subj[subj.diagnosis == 0].prob.to_numpy()
     wins = sum((p > n) + 0.5 * (p == n) for p in pos for n in neg)
     auc_subj = wins / (len(pos) * len(neg))
-    # trial-level AUC (each trial gets its subject's diagnosis; subject-grouped CV)
-    pt = df.groupby(["subject", "seed"]).apply(
-        lambda g: float(((g.trial_prob_mean >= 0.5) == (g.diagnosis == 1)).mean()),
-        include_groups=False)
+    # per-seed subject accuracy: every (subject, seed) row is one subject
+    # decision obtained from the mean trial probability, so this is the same
+    # quantity as subj_acc averaged with equal weight per seed.
+    per_seed_acc = float((((df.trial_prob_mean >= 0.5).to_numpy()) ==
+                          (df.diagnosis.to_numpy() == 1)).mean())
     out = {
         "protocol": protocol,
         "config": {"epochs": args.epochs, "batch": args.batch,
@@ -198,15 +199,16 @@ def main() -> int:
                    "n_trials": total, "n_subjects": 81},
         "subject_level_auc": round(float(auc_subj), 3),
         "subject_level_acc": round(subj_acc, 3),
-        "fold_subject_acc_mean": round(float(pt.mean()), 3),
+        "per_seed_subject_acc_mean": round(per_seed_acc, 3),
         "subject_decisions": subj.to_dict(orient="records"),
-        "caveat": "see README: released 64-ch subset covers all 81 subjects; "
-                  "n=81 power floor remains 0.668",
+        "caveat": "released single-trial files carry the 64-channel montage; "
+                  "the CV is grouped by subject, so trial-level leakage is "
+                  "excluded. n=81 -> |d|=0.61 floor for 80% power (AUC 0.668).",
     }
     dest = REPO / f"single_trial_full_{args.protocol}.json"
     dest.write_text(json.dumps(out, indent=2), encoding="utf-8")
     print(f"\nsubject-level AUC = {auc_subj:.3f}  acc = {subj_acc:.3f} "
-          f"(fold-mean per-subject acc {pt.mean():.3f})")
+          f"(per-seed subject acc {per_seed_acc:.3f})")
     print(f"written {dest}")
     return 0
 
