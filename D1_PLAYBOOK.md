@@ -55,6 +55,48 @@ Facts confirmed against both copies: fs derived as 1023.96 Hz (the documented
 1024 Hz), 3072 samples = 3.0 s centred epochs, event onset 1.5 s, 81 subjects
 x 3 conditions complete, labels 49 SCZ / 32 controls.
 
+### 1b. The single-trial route - sizes, and why you can skip the 8.6 GB zip
+
+Measured through the API on 2026-11-10, not copied from the dataset page:
+
+| | files | zip (download) | unpacked |
+|---|---|---|---|
+| `broach/button-tone-sz` | 45 | 8.03 GiB | 19.38 GiB |
+| `broach/buttontonesz2` | 41 | 8.11 GiB | 19.54 GiB |
+
+99% of the unpacked bytes are the per-subject 64-channel files (468-515 MiB
+each); `ERPdata.csv` is 115 MiB and `mergedTrialData.csv` 15 MiB, i.e. 0.7%
+combined. The page's "9 GB" figure is the compressed zip.
+
+Subject numbering, which the dataset description gets wrong (it still says
+"twenty four subjects"):
+
+- `button-tone-sz`: 1-24 and 66-81 = 40 subjects
+- `buttontonesz2`: 25-65 = 41 subjects
+- the two together partition all 81; neither alone is complete.
+
+Do not download the archive. Single files are served individually - note the
+`%2F` standing in for the slash in the file's internal name:
+
+```bash
+curl -L -u "$KAGGLE_USERNAME:$KAGGLE_KEY" \
+  -o 1.csv.zip \
+  "https://www.kaggle.com/api/v1/datasets/download/broach/button-tone-sz/1.csv%2F1.csv"
+# 203 MiB compressed for one subject; without %2F the API answers 404
+```
+
+Layout, read off `columnLabels.csv` and `time.csv` (both a few KB):
+
+- 71 columns = `subject, trial, condition, sample` + 64 scalp + 6 EOG/ref
+  (`VEOa VEOb HEOL HEOR Nose TP10`).
+- 3072 samples, -1500 to +1499 ms at 1024 Hz.
+- **CPz and Pz are present**, so Barros 2022's five midline sites are
+  available here and nowhere in the averaged release.
+- No `rejected` column: outlier trials are already gone.
+
+Disk budget matters: this machine had 44 GiB free on C: and 32 GiB on D:,
+so neither drive holds the full 38.9 GiB. Pull a subset first.
+
 ## 2. Probe — look before building
 
 ```bash

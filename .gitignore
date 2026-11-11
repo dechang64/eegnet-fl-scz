@@ -29,3 +29,5 @@ __pycache__/
 wandb/
 .DS_Store
 .pytest_cache/
+n100_canonical_check.csv
+n100_canonical_check.json

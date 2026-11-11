@@ -14,14 +14,20 @@ than another point of accuracy. If it does not, that is also a result.
 honest numbers (2026-11-10, trial-averaged ERPs, subject-grouped 5-fold CV):
 EEGNet AUC 0.447 +/- 0.074, BarrosCNN 0.516 +/- 0.081 - chance level, as the
 dataset author himself predicted for averaged-waveform diagnosis. The
-classical N100 suppression contrast (no ML) replicates the phenomenon's
-direction in both groups (+1.80 / +1.63 uV) but the group contrast is not
-significant with a crude peak metric (p=0.61). Details: `d1_probe.json`,
-`scripts/n100_classic_check.py`. Removing the trial averaging does not rescue
+classical N100 suppression contrast (no ML) does replicate, once measured the
+way the dataset's authors measure it - 80-100 ms mean, button-only condition
+subtracted: HC -2.21 uV vs SZ -0.88 uV, Welch p=0.0056, Cohen d=-0.61
+(`scripts/n100_canonical.py`). A crude peak metric with no subtraction shows
+nothing (+1.80 / +1.63 uV, p=0.61), which is what earlier runs reported before
+the metric was corrected - see AUDIT.md Addendum 3. Note that d=-0.61 is
+equivalent to AUC 0.668, exactly the minimum detectable AUC at 80% power here:
+the effect and the detection floor coincide. Removing the trial averaging does
+not rescue
 the diagnostic claim: with 7836 single trials and subject-grouped CV the
 subject-level AUC is 0.595, 95% CI [0.470, 0.720], because ICC(1)=0.04 makes
 the effective sample size ~1622 but leaves the number of independent people at
-81 (`scripts/single_trial_check.py`). See also [`AUDIT.md`](AUDIT.md) and
+81 (`scripts/single_trial_check.py`). See also [`AUDIT.md`](AUDIT.md),
+[`DATASETS.md`](DATASETS.md) and
 [`D1_PLAYBOOK.md`](D1_PLAYBOOK.md).
 
 **Provenance.** Every number above was first computed on a third-party Zenodo

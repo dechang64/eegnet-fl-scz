@@ -87,5 +87,71 @@ clustering throughout.
 - No real data has been run. `button-tone-sz` has never been loaded here, so
   `CHANNELS`, `FS`, the subject-id grammar and the file layout remain D1 TODOs.
 - `BarrosCNN` is an approximation, not a faithful reimplementation of Barros
-  2022 (its docstring already said so; it still says so).
-- Accuracy numbers do not exist yet. Nothing in this repo has produced an AUC.
+  2022 (its docstring already said so; it still says so). Two differences are
+  larger than "approximation" and are recorded here so that nobody reads our
+  numbers as a failed replication of theirs:
+  1. **Input unit.** Barros 2022 fed *single trials* (11,609 trials from 128
+     subjects), not subject x condition averages. Their 78% is a single-trial
+     model aggregated to the subject by averaging trial probabilities.
+  2. **Condition.** They used the *auditory-only* condition (Kaggle
+     `condition == 2`) on 5 midline sites (Fz, FCz, Cz, CPz, Pz). This repo's
+     D1 command uses `selfsz` (`condition == 1`, self-generated tone) on the 9
+     sites that the Kaggle ERP release provides. CPz and Pz are absent from
+     that release, which is itself the proof that Barros worked from the raw
+     64-channel recordings rather than from `ERPdata.csv`.
+  Our AUC ~0.5 therefore does not contradict their 0.78: different input unit,
+  different condition, n=81 vs n=128, and 9 sites chosen for the suppression
+  contrast rather than for their classifier.
+- Accuracy numbers now exist (see `results/`), but they are chance-level and
+  describe a different experiment from Barros 2022 - see the two points above.
+
+## Addendum 3 (2026-11-10, the N100 metric was wrong, the effect is there)
+
+Addendum 2 concluded that the N100 suppression contrast did not separate the
+groups (HC 1.80 vs SZ 1.63 uV, difference 0.17, p = 0.61). **That conclusion is
+withdrawn.** It was an artefact of how this repo measured the component, not a
+property of the data.
+
+Reading the dataset owner's own replication notebook
+(`broach/replicating-did-i-do-that-paper-analyses-with-r`) exposed three
+deviations, and each one alone is enough to bury the effect:
+
+| pipeline | HC | SZ | HC-SZ | p | Cohen d |
+|---|---|---|---|---|---|
+| canonical: 80-100 ms mean @ Fz/FCz/Cz, self minus button-only | -2.21 | -0.88 | -1.33 | 0.0056 | -0.61 |
+| 80-100 ms mean, no button-only subtraction | -2.02 | -1.48 | -0.54 | 0.25 | -0.26 |
+| peak in 50-180 ms, no subtraction (what Addendum 2 used) | -1.81 | -1.64 | -0.17 | 0.72 | -0.08 |
+
+The first row reproduces the author's published numbers (2.2 and 0.88 uV) to
+two decimal places, which also re-confirms the data copy and the label mapping.
+
+Why the peak metric fails: the N100 is a *mean* over a fixed early window in
+this paradigm. Peak-picking a 130 ms-wide window lets trial-to-trial latency
+jitter drag the extremum toward whichever of N100 or P200 happens to be larger
+for that subject, and averaging those extremes over subjects regresses both
+groups toward the same value.
+
+Why the subtraction matters: the button-only condition carries motor potentials
+time-locked to the press, and those differ between groups. Skipping the
+subtraction leaves that difference inside the "suppression" score, where it
+cancels the auditory effect instead of isolating it.
+
+Consequence: **d = -0.61 is equivalent to AUC 0.668**, which is the same
+number as the minimum detectable AUC at 80% power in `single_trial_check.json`
+(0.668). The effect size and the cohort's detection floor coincide almost
+exactly. This is the sharpest available statement about the dataset: at n=81
+one can just barely detect this mechanism, and nothing smaller. It is an
+argument for a mechanism paper and against a diagnostic classifier - not a
+reason to claim no effect.
+
+Carried forward from the same notebook, and not resolved here: subtracting the
+button-only epoch can manufacture a positive N1 in subjects whose button-only
+condition is itself negative in the window (the author names 60, 61, 64). The
+author himself writes "we should revisit the practice of subtracting this
+control condition later". Any claim resting on this metric should report both
+the corrected and uncorrected values.
+
+Implementation: `scripts/n100_canonical.py` (writes
+`n100_canonical_check.json`). `scripts/n100_classic_check.py` keeps its old
+metric and its old numbers; it is a provenance check, not a replication.
+
