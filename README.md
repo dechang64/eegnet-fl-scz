@@ -17,7 +17,11 @@ dataset author himself predicted for averaged-waveform diagnosis. The
 classical N100 suppression contrast (no ML) replicates the phenomenon's
 direction in both groups (+1.80 / +1.63 uV) but the group contrast is not
 significant with a crude peak metric (p=0.61). Details: `d1_probe.json`,
-`scripts/n100_classic_check.py`. See also [`AUDIT.md`](AUDIT.md) and
+`scripts/n100_classic_check.py`. Removing the trial averaging does not rescue
+the diagnostic claim: with 7836 single trials and subject-grouped CV the
+subject-level AUC is 0.595, 95% CI [0.470, 0.720], because ICC(1)=0.04 makes
+the effective sample size ~1622 but leaves the number of independent people at
+81 (`scripts/single_trial_check.py`). See also [`AUDIT.md`](AUDIT.md) and
 [`D1_PLAYBOOK.md`](D1_PLAYBOOK.md). These numbers come from a third-party
 Zenodo copy of the data; re-verify against the official Kaggle download
 before citing.

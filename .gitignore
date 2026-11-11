@@ -5,6 +5,7 @@ data_synth/
 _fake_kaggle/
 _zenodo/
 n100_suppression_check.csv
+single_trial_check.json
 zen_meta.json
 _fake_data/
 _fake_results/

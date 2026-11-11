@@ -50,6 +50,37 @@ regression test guards it; DOCUMENTED = deliberately left as-is with a warning.
   5-fold training and XAI all ran; onset derived as 1.5 s. `pytest` -> 46
   passed.
 
+## Addendum 2 (2026-11-10, single-trial analysis)
+
+Question raised: if averaging leaves one sample per subject, what happens
+without averaging? `mergedTrialData.csv` (third-party Zenodo copy) carries
+23201 usable trials. `scripts/single_trial_check.py` measures what that buys.
+
+  A  single trial, random 5-fold           AUC 0.564   WRONG - leaked
+  B  single trial, grouped + aggregated    AUC 0.595   95% CI [0.470, 0.720]
+  C  averaged per subject, grouped         AUC 0.527
+
+Protocol A is the pseudo-replication of item B2 in its natural habitat: the
+number is not merely optimistic, it is meaningless, because each held-out
+trial shares a person with the training set.
+
+Why n does not become 23201: ICC(1) on Fz_N100 is 0.040, so
+n_eff = 81 * 97 / (1 + 96 * 0.040) ~ 1622. Trials are not independent
+observations. The unit a diagnostic claim generalises over is the person, and
+there are 81 of those.
+
+What single trials do buy is measurement reliability: single-trial N100
+r=0.040, averaged over 97 trials r=0.822 (Spearman-Brown). Less attenuation,
+so a smaller true difference becomes visible - but the ceiling is still set by
+81 people. At n=49/32 the smallest AUC reaching 80% power is 0.668, and the
+95% CI here tops out at 0.720. The study can only detect a large effect.
+
+Consequence for the paper: a diagnostic-classification claim is not supportable
+on this cohort, with or without averaging. A within-subject or
+mechanism-oriented claim (does the model recover the suppression difference?)
+is the defensible target, and it should be reported with subject-level
+clustering throughout.
+
 ## What this audit does NOT claim
 
 - No real data has been run. `button-tone-sz` has never been loaded here, so
