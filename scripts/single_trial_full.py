@@ -110,6 +110,8 @@ def main() -> int:
     ap.add_argument("--seeds", type=int, default=3)
     ap.add_argument("--skip-crc", action="store_true",
                     help="skip zip CRC validation (archives were checked on download)")
+    ap.add_argument("--resume", action="store_true",
+                    help="reuse folds already flushed to *_partial.jsonl")
     args = ap.parse_args()
 
     torch.set_num_threads(max(1, torch.get_num_threads() // 2))
@@ -160,30 +162,53 @@ def main() -> int:
         return rec
 
     t0 = time.time()
+    # A LOSO run is ~4 h on this box, so each fold is flushed to a .jsonl and
+    # can be resumed with --resume without redoing finished folds.
+    part = REPO / f"single_trial_full_{args.protocol}_partial.jsonl"
+    done_folds, all_rec = {}, []
+    if args.resume and part.exists():
+        for line in part.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            rec_fold = json.loads(line)
+            done_folds[int(rec_fold["fold"])] = rec_fold["records"]
+        all_rec = [r for f in sorted(done_folds) for r in done_folds[f]]
+        print(f"resumed {len(done_folds)} folds from {part.name}", flush=True)
+    part_fh = open(part, "a", encoding="utf-8")
+
+    def flush(fold_id, rec):
+        part_fh.write(json.dumps({"fold": fold_id, "records": rec}) + "\n")
+        part_fh.flush()
+
     if args.protocol == "10fold":
         skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=20261111)
         sids_arr = np.array(all_sids)
         labs_arr = np.array([diag[s] for s in all_sids])
-        all_rec = []
         for k, (tr_i, te_i) in enumerate(skf.split(sids_arr, labs_arr)):
+            if k in done_folds:
+                continue
             rec = run_split([int(s) for s in sids_arr[te_i]])
             all_rec.extend(rec)
+            flush(k, rec)
             acc = np.mean([(r["trial_prob_mean"] >= 0.5) == bool(r["diagnosis"])
                            for r in rec])
             print(f"fold {k}: {len(te_i)} subjects, fold acc {acc:.2f} "
                   f"({time.time()-t0:.0f}s)", flush=True)
         protocol = "subject-grouped stratified 10-fold x %d seeds" % args.seeds
     else:
-        all_rec = []
         for k, s in enumerate(all_sids):
+            if k in done_folds:
+                continue
             rec = run_split([s])
             all_rec.extend(rec)
+            flush(k, rec)
             r = rec[0]
             ok = (r["trial_prob_mean"] >= 0.5) == bool(r["diagnosis"])
             print(f"loso {k+1}/81 subj {s}: prob {r['trial_prob_mean']:.3f} "
                   f"true {r['diagnosis']} {'ok' if ok else 'miss'} "
                   f"({time.time()-t0:.0f}s)", flush=True)
         protocol = "leave-one-subject-out x %d seeds" % args.seeds
+    part_fh.close()
 
     # aggregate: per subject mean over seeds
     df = pd.DataFrame(all_rec)
