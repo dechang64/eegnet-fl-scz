@@ -237,6 +237,7 @@ paper reports is reproducible from it without touching the parquet copies.
 |---|---|---|---|
 | logistic regression | 1 feature: 80-100 ms mean, 7,836 button+tone trials | subject-grouped 10-fold | 0.533 (trial) / 0.617 (subject mean) |
 | EEGNet (unchanged) | 5 midline channels x 500 ms, 23,201 trials | subject-grouped 10-fold | **0.376**, acc 0.457 |
+| EEGNet (unchanged) | same | leave-one-subject-out, 81 folds | **0.373**, acc 0.432 |
 
 Two facts, both needed:
 
@@ -256,10 +257,19 @@ with d = -0.61 is below the detection floor of an end-to-end network trained on
 23k trials; a hand-specified feature sits right at that floor. Anyone reporting
 90%+ on this dataset is splitting trials, not subjects (section 4).
 
-Caveat carried forward: one seed for the 10-fold protocol. The below-chance
-point rests on the gap to the 0.617 feature baseline, not on the precise 0.376.
-The 81-fold LOSO run (`--protocol loso`) is the remaining check.
+The LOSO run confirms the 10-fold number under the strictest possible
+protocol: AUC 0.373, acc 0.432 (binomial p = 0.27 vs chance; mean P(SZ) = 0.589
+for HC vs 0.519 for SZ - again base-rate collapse, no direction). Two protocols
+that share no fold structure land within 0.003 AUC of each other, so this is
+not a split artefact.
 
-Artifacts: `single_trial_full_10fold.json`, `single_trial_features.json`,
+Execution note: LOSO folds 1-43 trained on CPU (24 ms/step), folds 44-81 on the
+laptop RTX 4060 (3.0 ms/step, ~8x faster) after the Windows update that had
+disabled the CUDA stack was resolved by reboot. Seeds unchanged; per-fold
+records are checkpointed in `single_trial_full_loso_partial.jsonl` and were
+resumed across the reboot.
+
+Artifacts: `single_trial_full_10fold.json`, `single_trial_full_loso.json`,
+`single_trial_features.json`,
 `D:/eegnet-data/single_trial_features.npz` (per-trial amplitudes, 124 KiB, so
 later analyses skip the 17 GiB re-read).

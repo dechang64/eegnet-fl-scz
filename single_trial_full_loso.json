@@ -1,0 +1,512 @@
+{
+  "protocol": "leave-one-subject-out x 1 seeds",
+  "config": {
+    "epochs": 25,
+    "batch": 64,
+    "channels": [
+      "Fz",
+      "FCz",
+      "Cz",
+      "CPz",
+      "Pz"
+    ],
+    "window_ms": [
+      -100.0,
+      400.0
+    ],
+    "n_trials": 23201,
+    "n_subjects": 81
+  },
+  "subject_level_auc": 0.373,
+  "subject_level_acc": 0.432,
+  "per_seed_subject_acc_mean": 0.432,
+  "subject_decisions": [
+    {
+      "subject": 1,
+      "diagnosis": 0,
+      "prob": 0.6010177135467529,
+      "n": 289
+    },
+    {
+      "subject": 2,
+      "diagnosis": 0,
+      "prob": 0.6356456279754639,
+      "n": 298
+    },
+    {
+      "subject": 3,
+      "diagnosis": 0,
+      "prob": 0.6115557551383972,
+      "n": 287
+    },
+    {
+      "subject": 4,
+      "diagnosis": 0,
+      "prob": 0.39792340993881226,
+      "n": 288
+    },
+    {
+      "subject": 5,
+      "diagnosis": 0,
+      "prob": 0.5129480957984924,
+      "n": 290
+    },
+    {
+      "subject": 6,
+      "diagnosis": 0,
+      "prob": 0.5074863433837891,
+      "n": 281
+    },
+    {
+      "subject": 7,
+      "diagnosis": 0,
+      "prob": 0.4891086220741272,
+      "n": 288
+    },
+    {
+      "subject": 8,
+      "diagnosis": 0,
+      "prob": 0.5733692646026611,
+      "n": 287
+    },
+    {
+      "subject": 9,
+      "diagnosis": 0,
+      "prob": 0.7152294516563416,
+      "n": 282
+    },
+    {
+      "subject": 10,
+      "diagnosis": 0,
+      "prob": 0.7613827586174011,
+      "n": 294
+    },
+    {
+      "subject": 11,
+      "diagnosis": 0,
+      "prob": 0.5578211545944214,
+      "n": 287
+    },
+    {
+      "subject": 12,
+      "diagnosis": 0,
+      "prob": 0.47053980827331543,
+      "n": 290
+    },
+    {
+      "subject": 13,
+      "diagnosis": 0,
+      "prob": 0.9428121447563171,
+      "n": 292
+    },
+    {
+      "subject": 14,
+      "diagnosis": 0,
+      "prob": 0.5309355854988098,
+      "n": 292
+    },
+    {
+      "subject": 15,
+      "diagnosis": 0,
+      "prob": 0.524046778678894,
+      "n": 289
+    },
+    {
+      "subject": 16,
+      "diagnosis": 0,
+      "prob": 0.6035658121109009,
+      "n": 289
+    },
+    {
+      "subject": 17,
+      "diagnosis": 0,
+      "prob": 0.815974771976471,
+      "n": 275
+    },
+    {
+      "subject": 18,
+      "diagnosis": 0,
+      "prob": 0.47711181640625,
+      "n": 280
+    },
+    {
+      "subject": 19,
+      "diagnosis": 0,
+      "prob": 0.5683082342147827,
+      "n": 295
+    },
+    {
+      "subject": 20,
+      "diagnosis": 0,
+      "prob": 0.615077555179596,
+      "n": 290
+    },
+    {
+      "subject": 21,
+      "diagnosis": 0,
+      "prob": 0.589963972568512,
+      "n": 293
+    },
+    {
+      "subject": 22,
+      "diagnosis": 0,
+      "prob": 0.6825568079948425,
+      "n": 290
+    },
+    {
+      "subject": 23,
+      "diagnosis": 0,
+      "prob": 0.5879971981048584,
+      "n": 288
+    },
+    {
+      "subject": 24,
+      "diagnosis": 0,
+      "prob": 0.9145394563674927,
+      "n": 297
+    },
+    {
+      "subject": 25,
+      "diagnosis": 1,
+      "prob": 0.5738906860351562,
+      "n": 296
+    },
+    {
+      "subject": 26,
+      "diagnosis": 1,
+      "prob": 0.6341435313224792,
+      "n": 297
+    },
+    {
+      "subject": 27,
+      "diagnosis": 1,
+      "prob": 0.6443923115730286,
+      "n": 291
+    },
+    {
+      "subject": 28,
+      "diagnosis": 1,
+      "prob": 0.48363804817199707,
+      "n": 289
+    },
+    {
+      "subject": 29,
+      "diagnosis": 1,
+      "prob": 0.5350647568702698,
+      "n": 286
+    },
+    {
+      "subject": 30,
+      "diagnosis": 1,
+      "prob": 0.5758688449859619,
+      "n": 283
+    },
+    {
+      "subject": 31,
+      "diagnosis": 1,
+      "prob": 0.5555992722511292,
+      "n": 237
+    },
+    {
+      "subject": 32,
+      "diagnosis": 1,
+      "prob": 0.7129315137863159,
+      "n": 275
+    },
+    {
+      "subject": 33,
+      "diagnosis": 1,
+      "prob": 0.4904383420944214,
+      "n": 292
+    },
+    {
+      "subject": 34,
+      "diagnosis": 1,
+      "prob": 0.5089325308799744,
+      "n": 289
+    },
+    {
+      "subject": 35,
+      "diagnosis": 1,
+      "prob": 0.5996925234794617,
+      "n": 289
+    },
+    {
+      "subject": 36,
+      "diagnosis": 1,
+      "prob": 0.7095518112182617,
+      "n": 298
+    },
+    {
+      "subject": 37,
+      "diagnosis": 1,
+      "prob": 0.5860819816589355,
+      "n": 290
+    },
+    {
+      "subject": 38,
+      "diagnosis": 1,
+      "prob": 0.5817376375198364,
+      "n": 290
+    },
+    {
+      "subject": 39,
+      "diagnosis": 1,
+      "prob": 0.5361142754554749,
+      "n": 292
+    },
+    {
+      "subject": 40,
+      "diagnosis": 1,
+      "prob": 0.5316388010978699,
+      "n": 290
+    },
+    {
+      "subject": 41,
+      "diagnosis": 1,
+      "prob": 0.45532214641571045,
+      "n": 290
+    },
+    {
+      "subject": 42,
+      "diagnosis": 1,
+      "prob": 0.4850250482559204,
+      "n": 289
+    },
+    {
+      "subject": 43,
+      "diagnosis": 1,
+      "prob": 0.5083003640174866,
+      "n": 281
+    },
+    {
+      "subject": 44,
+      "diagnosis": 1,
+      "prob": 0.49915754795074463,
+      "n": 289
+    },
+    {
+      "subject": 45,
+      "diagnosis": 1,
+      "prob": 0.38511860370635986,
+      "n": 286
+    },
+    {
+      "subject": 46,
+      "diagnosis": 1,
+      "prob": 0.3535015881061554,
+      "n": 286
+    },
+    {
+      "subject": 47,
+      "diagnosis": 1,
+      "prob": 0.4709271490573883,
+      "n": 282
+    },
+    {
+      "subject": 48,
+      "diagnosis": 1,
+      "prob": 0.0018278242787346244,
+      "n": 285
+    },
+    {
+      "subject": 49,
+      "diagnosis": 1,
+      "prob": 0.637910008430481,
+      "n": 289
+    },
+    {
+      "subject": 50,
+      "diagnosis": 1,
+      "prob": 0.569533109664917,
+      "n": 295
+    },
+    {
+      "subject": 51,
+      "diagnosis": 1,
+      "prob": 0.25573650002479553,
+      "n": 205
+    },
+    {
+      "subject": 52,
+      "diagnosis": 1,
+      "prob": 0.4811783730983734,
+      "n": 291
+    },
+    {
+      "subject": 53,
+      "diagnosis": 1,
+      "prob": 0.6035668849945068,
+      "n": 278
+    },
+    {
+      "subject": 54,
+      "diagnosis": 1,
+      "prob": 0.452568918466568,
+      "n": 287
+    },
+    {
+      "subject": 55,
+      "diagnosis": 1,
+      "prob": 0.49972081184387207,
+      "n": 289
+    },
+    {
+      "subject": 56,
+      "diagnosis": 1,
+      "prob": 0.5202744007110596,
+      "n": 286
+    },
+    {
+      "subject": 57,
+      "diagnosis": 1,
+      "prob": 0.34898748993873596,
+      "n": 289
+    },
+    {
+      "subject": 58,
+      "diagnosis": 1,
+      "prob": 0.4947960078716278,
+      "n": 286
+    },
+    {
+      "subject": 59,
+      "diagnosis": 0,
+      "prob": 0.5967957377433777,
+      "n": 290
+    },
+    {
+      "subject": 60,
+      "diagnosis": 0,
+      "prob": 0.6412661075592041,
+      "n": 285
+    },
+    {
+      "subject": 61,
+      "diagnosis": 0,
+      "prob": 0.5086876153945923,
+      "n": 282
+    },
+    {
+      "subject": 62,
+      "diagnosis": 0,
+      "prob": 0.4889918863773346,
+      "n": 287
+    },
+    {
+      "subject": 63,
+      "diagnosis": 0,
+      "prob": 0.4881435036659241,
+      "n": 286
+    },
+    {
+      "subject": 64,
+      "diagnosis": 0,
+      "prob": 0.5820598602294922,
+      "n": 291
+    },
+    {
+      "subject": 65,
+      "diagnosis": 0,
+      "prob": 0.5581738948822021,
+      "n": 286
+    },
+    {
+      "subject": 66,
+      "diagnosis": 0,
+      "prob": 0.30364635586738586,
+      "n": 288
+    },
+    {
+      "subject": 67,
+      "diagnosis": 1,
+      "prob": 0.2303571105003357,
+      "n": 291
+    },
+    {
+      "subject": 68,
+      "diagnosis": 1,
+      "prob": 0.436709463596344,
+      "n": 288
+    },
+    {
+      "subject": 69,
+      "diagnosis": 1,
+      "prob": 0.6695396900177002,
+      "n": 295
+    },
+    {
+      "subject": 70,
+      "diagnosis": 1,
+      "prob": 0.4861206114292145,
+      "n": 282
+    },
+    {
+      "subject": 71,
+      "diagnosis": 1,
+      "prob": 0.6082262992858887,
+      "n": 280
+    },
+    {
+      "subject": 72,
+      "diagnosis": 1,
+      "prob": 0.7573654651641846,
+      "n": 286
+    },
+    {
+      "subject": 73,
+      "diagnosis": 1,
+      "prob": 0.5925306081771851,
+      "n": 293
+    },
+    {
+      "subject": 74,
+      "diagnosis": 1,
+      "prob": 0.4993533492088318,
+      "n": 290
+    },
+    {
+      "subject": 75,
+      "diagnosis": 1,
+      "prob": 0.36281195282936096,
+      "n": 282
+    },
+    {
+      "subject": 76,
+      "diagnosis": 1,
+      "prob": 0.5128304958343506,
+      "n": 288
+    },
+    {
+      "subject": 77,
+      "diagnosis": 1,
+      "prob": 0.7514052391052246,
+      "n": 278
+    },
+    {
+      "subject": 78,
+      "diagnosis": 1,
+      "prob": 0.5110560059547424,
+      "n": 286
+    },
+    {
+      "subject": 79,
+      "diagnosis": 1,
+      "prob": 0.6447492241859436,
+      "n": 295
+    },
+    {
+      "subject": 80,
+      "diagnosis": 1,
+      "prob": 0.3670453131198883,
+      "n": 282
+    },
+    {
+      "subject": 81,
+      "diagnosis": 1,
+      "prob": 0.6949905753135681,
+      "n": 292
+    }
+  ],
+  "caveat": "released single-trial files carry the 64-channel montage; the CV is grouped by subject, so trial-level leakage is excluded. n=81 -> |d|=0.61 floor for 80% power (AUC 0.668)."
+}
