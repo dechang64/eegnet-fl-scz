@@ -74,10 +74,13 @@ def load_subject(zip_path: Path, cols_hdr: list, w_idx: np.ndarray,
     return sid, X, heads
 
 
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
 def train_fold(Xtr, ytr, epochs, batch, seed, n_t):
     torch.manual_seed(seed)
     g = torch.Generator().manual_seed(seed)
-    model = EEGNet(n_classes=2, n_channels=len(MIDLINE), n_timesteps=n_t)
+    model = EEGNet(n_classes=2, n_channels=len(MIDLINE), n_timesteps=n_t).to(DEVICE)
     opt = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
     lossf = nn.CrossEntropyLoss()
     xt = torch.tensor(Xtr, dtype=torch.float32).unsqueeze(1)
@@ -87,8 +90,10 @@ def train_fold(Xtr, ytr, epochs, batch, seed, n_t):
         perm = torch.randperm(len(xt), generator=g)
         for i in range(0, len(xt), batch):
             idx = perm[i:i + batch]
-            opt.zero_grad()
-            lossf(model(xt[idx]), yt[idx]).backward()
+            xb = xt[idx].to(DEVICE, non_blocking=True)
+            yb = yt[idx].to(DEVICE, non_blocking=True)
+            opt.zero_grad(set_to_none=True)
+            lossf(model(xb), yb).backward()
             opt.step()
     return model
 
@@ -97,7 +102,10 @@ def eval_model(model, X, mu, sd):
     model.eval()
     with torch.no_grad():
         x = torch.tensor((X - mu) / (sd + 1e-6), dtype=torch.float32).unsqueeze(1)
-        return torch.softmax(model(x), dim=1)[:, 1].numpy()
+        out = []
+        for i in range(0, len(x), 512):
+            out.append(torch.softmax(model(x[i:i + 512].to(DEVICE)), dim=1)[:, 1].cpu())
+        return torch.cat(out).numpy()
 
 
 def main() -> int:
@@ -115,6 +123,9 @@ def main() -> int:
     args = ap.parse_args()
 
     torch.set_num_threads(max(1, torch.get_num_threads() // 2))
+    print(f"device: {DEVICE}"
+          + (f" ({torch.cuda.get_device_name(0)})" if DEVICE.type == "cuda" else
+             " -- CUDA not available, expect ~5x slower folds"), flush=True)
     labels = pd.read_csv(REPO / "data" / "labels.csv")
     diag = dict(zip(labels.subject_id.astype(int), labels.label))
     cols_hdr = pd.read_csv(REPO.parent / "kaggle_meta" / "columnLabels.csv",
