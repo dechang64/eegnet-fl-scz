@@ -233,23 +233,29 @@ paper reports is reproducible from it without touching the parquet copies.
 
 ### 8.3 One feature vs an end-to-end network
 
-| decoder | input | protocol | subject-level AUC |
+| decoder | input | protocol | subject-level AUC (10k-bootstrap 95% CI) |
 |---|---|---|---|
-| logistic regression | 1 feature: 80-100 ms mean, 7,836 button+tone trials | subject-grouped 10-fold | 0.533 (trial) / 0.617 (subject mean) |
-| EEGNet (unchanged) | 5 midline channels x 500 ms, 23,201 trials | subject-grouped 10-fold | **0.376**, acc 0.457 |
-| EEGNet (unchanged) | same | leave-one-subject-out, 81 folds | **0.373**, acc 0.432 |
+| logistic regression | 1 feature: 80-100 ms mean, 7,836 button+tone trials | subject-grouped 10-fold | 0.533 (trial) / **0.617** [0.486, 0.741] (subject mean) |
+| EEGNet (unchanged) | 5 midline channels x 500 ms, 23,201 trials | subject-grouped 10-fold | **0.376** [0.260, 0.501], acc 0.457 |
+| EEGNet (unchanged) | same | leave-one-subject-out, 81 folds | **0.373** [0.255, 0.500], acc 0.432 |
 
 Two facts, both needed:
 
 1. **The signal is real but thin.** A single targeted feature reaches 0.617 at
    subject level under grouped CV - close to the 0.668 ceiling implied by
    d = -0.61, and it is the *same* feature the paper reports.
-2. **The end-to-end network does not find it, and lands below chance.** AUC 0.376
-   on 81 subjects is roughly two standard errors under 0.5; the per-fold
-   accuracies (0.33, 0.62, 0.62, 0.25, 0.38, 0.50, 0.50, 0.50, 0.50, 0.38) show
-   no consistent direction. Under grouped CV the model is mostly predicting the
-   0.60 prior (mean P(SZ) = 0.611 for HC, 0.535 for SZ), i.e. it collapsed onto
-   the base rate rather than onto the inverted effect.
+2. **The end-to-end network does not find it, and neither protocol reaches
+   significance.** Both EEGNet AUCs sit below 0.5 with bootstrap CIs that
+   include chance (10-fold [0.260, 0.501], LOSO [0.255, 0.500]); the honest
+   reading is "no subject-level discriminability, if anything inverted", not a
+   significant anti-signal. The per-fold accuracies (0.33, 0.62, 0.62, 0.25,
+   0.38, 0.50, 0.50, 0.50, 0.50, 0.38) show no consistent direction, and mean
+   P(SZ) is 0.611 for HC vs 0.535 for SZ - the model collapsed onto the 0.60
+   prior. Note the feature baseline's own CI ([0.486, 0.741]) also includes
+   0.5: at n = 81 even the hand-specified decoder is not individually
+   significant under grouped CV. What *is* significant is the group-level test
+   on the same feature (d = -0.61, p = 0.0056, section 8.2) - the dataset can
+   see the mechanism, it cannot yet support a classifier claim.
 
 Consequence for the write-up: the honest claim is about the **cohort and the
 measurement**, not about a classifier. A 5-channel, 500 ms, 81-subject problem
