@@ -1,0 +1,45 @@
+{
+  "condition_code_map": {
+    "selfsz": 1,
+    "passivesz": 2,
+    "buttonsz": 3
+  },
+  "condition_correlation": {
+    "selfsz": {
+      "code1": 1.0,
+      "code2": 0.704,
+      "code3": 0.301
+    },
+    "passivesz": {
+      "code1": 0.704,
+      "code2": 1.0,
+      "code3": 0.044
+    },
+    "buttonsz": {
+      "code1": 0.301,
+      "code2": 0.044,
+      "code3": 1.0
+    }
+  },
+  "canonical_from_raw": {
+    "hc": {
+      "n": 32,
+      "mean": -2.2132034972310066
+    },
+    "sz": {
+      "n": 49,
+      "mean": -0.8838870719987519
+    },
+    "diff": -1.3293164252322547,
+    "welch_p": 0.005593146390924846,
+    "cohen_d": -0.6133190637527497,
+    "auc_gauss": 0.6677403353325204,
+    "auc_rank": 0.6906887755102041
+  },
+  "trial_level_baseline": {
+    "n_trials": 7836,
+    "auc": 0.533349271134804,
+    "subject_decision_auc": 0.6167091836734694
+  },
+  "n_subjects": 81
+}

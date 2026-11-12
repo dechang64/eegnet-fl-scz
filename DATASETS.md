@@ -183,3 +183,83 @@ curl -s -H "Authorization: Bearer $KAGGLE_KEY" \
 Note that `datasets/view` and `datasets/list` accept basic auth
 (`-u user:key`), while `kernels/*` only accepts the bearer header and answers
 401 otherwise.
+
+The per-file endpoint needs the subject to appear twice, because on Kaggle each
+subject is a directory holding one file:
+
+```bash
+# correct (203-227 MiB each, 81 subjects, 17 GiB total):
+.../api/v1/datasets/download/broach/button-tone-sz/10.csv%2F10.csv
+# 404 even though the subject exists:
+.../api/v1/datasets/download/broach/button-tone-sz/10.csv
+```
+
+`scripts/download_single_trial.py` drives this, validates every archive's CRC,
+and skips subjects already on disk.
+
+## 8. All 81 subjects: the effect reproduces, the classifier does not
+
+Data: all 81 subjects (32 HC labelled 0, 49 SZ labelled 1), 23,201 trials,
+`D:/eegnet-data` 17 GiB, downloaded 2026-11-11. Three scripts, three questions.
+
+### 8.1 Which condition code is which
+
+The raw files label conditions 1/2/3 with no legend. Correlating each code's
+per-subject mean 80-100 ms amplitude against the already-split
+`data/{selfsz,passivesz,buttonsz}` parquet epochs, over 81 subjects:
+
+|        | selfsz | passivesz | buttonsz |
+|--------|--------|-----------|----------|
+| code 1 | 1.000  | 0.704     | 0.301    |
+| code 2 | 0.704  | 1.000     | 0.044    |
+| code 3 | 0.301  | 0.044     | 1.000    |
+
+**code 1 = button+tone (self), code 2 = passive playback, code 3 = button only.**
+Codes 1 and 2 correlate at 0.70 because both carry the tone-evoked response;
+code 3 does not. This is now an empirical fact rather than an assumption.
+
+### 8.2 The canonical N100 survives the trip through the raw files
+
+`scripts/single_trial_features.py` recomputes the published metric straight from
+the raw trials (80-100 ms mean @ Fz/FCz/Cz, passive minus self-minus-button):
+
+| source | HC | SZ | HC-SZ | p | d | AUC |
+|---|---|---|---|---|---|---|
+| parquet epochs (`n100_canonical_check.json`) | -2.21 uV | -0.88 uV | -1.33 | 0.0056 | -0.61 | 0.668 |
+| raw single trials, all 81 subjects | -2.21 uV | -0.88 uV | -1.33 | 0.0056 | -0.61 | 0.668 (rank 0.691) |
+
+Identical to two decimals. The raw release is the same data, and the effect the
+paper reports is reproducible from it without touching the parquet copies.
+
+### 8.3 One feature vs an end-to-end network
+
+| decoder | input | protocol | subject-level AUC |
+|---|---|---|---|
+| logistic regression | 1 feature: 80-100 ms mean, 7,836 button+tone trials | subject-grouped 10-fold | 0.533 (trial) / 0.617 (subject mean) |
+| EEGNet (unchanged) | 5 midline channels x 500 ms, 23,201 trials | subject-grouped 10-fold | **0.376**, acc 0.457 |
+
+Two facts, both needed:
+
+1. **The signal is real but thin.** A single targeted feature reaches 0.617 at
+   subject level under grouped CV - close to the 0.668 ceiling implied by
+   d = -0.61, and it is the *same* feature the paper reports.
+2. **The end-to-end network does not find it, and lands below chance.** AUC 0.376
+   on 81 subjects is roughly two standard errors under 0.5; the per-fold
+   accuracies (0.33, 0.62, 0.62, 0.25, 0.38, 0.50, 0.50, 0.50, 0.50, 0.38) show
+   no consistent direction. Under grouped CV the model is mostly predicting the
+   0.60 prior (mean P(SZ) = 0.611 for HC, 0.535 for SZ), i.e. it collapsed onto
+   the base rate rather than onto the inverted effect.
+
+Consequence for the write-up: the honest claim is about the **cohort and the
+measurement**, not about a classifier. A 5-channel, 500 ms, 81-subject problem
+with d = -0.61 is below the detection floor of an end-to-end network trained on
+23k trials; a hand-specified feature sits right at that floor. Anyone reporting
+90%+ on this dataset is splitting trials, not subjects (section 4).
+
+Caveat carried forward: one seed for the 10-fold protocol. The below-chance
+point rests on the gap to the 0.617 feature baseline, not on the precise 0.376.
+The 81-fold LOSO run (`--protocol loso`) is the remaining check.
+
+Artifacts: `single_trial_full_10fold.json`, `single_trial_features.json`,
+`D:/eegnet-data/single_trial_features.npz` (per-trial amplitudes, 124 KiB, so
+later analyses skip the 17 GiB re-read).
